@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" class="h-100">
+  <head>
+    <meta charset="utf-8">
+    <title>CovidSAFE - My venue</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-wEmeIV1mKuiNpC+IOBjI7aAzPcEZeedi5yW5f2yOq55WWLwNGmvvx4Um1vskeMj0" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.3/css/all.css" integrity="sha384-SZXxX4whJ79/gErwcOYf+zWLeJdY/qpuqC4cAa9rOGUstPomtqpuNWT9wdPEn2fk" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-p34f1UUtsS3wqzfto5wAAmdvj+osOnFyQFpp4Ua3gs/ZVWx6oOypYoCJhGGScy+8" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+    <link href="stylesheets/style.css" rel="stylesheet" type="text/css" />
+    <script src="javascripts/mymanage.venue.js" defer></script>
+  </head>
+  <body class="h-100">
+    <div class="d-flex flex-column h-100" id="app">
+      <header class="fixed-top">
+        <div class="d-flex bg-danger">
+          <h5 class="bg-danger m-0 py-1 text-white flex-grow-1 text-center"><a href="" id="header-dial" class="text-white">DIAL HEALTH HELPLINE<i class="fas fa-phone px-2"></i></a></h5>
+          <button type="button" class="btn-close btn-close-white align-self-center px-2"></button>
+        </div>
+        <nav class="navbar navbar-expand-md bg-light navbar-light">
+          <div class="container-md">
+            <a class="navbar-brand text-primary" href="home">CovidSAFE<i class="fas fa-user-shield px-1"></i></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topnav">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse d-md-flex justify-content-between" id="topnav">
+              <ul class="navbar-nav me-auto my-1">
+                <li class="nav-item me-1">
+                  <a class="nav-link" href="home"><i class="fas fa-home mx-1"></i>Home</a>
+                </li>
+                <li class="dropdown nav-item me-1">
+                  <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#"><i class="fas fa-info-circle mx-1"></i>My venue</a>
+                  <ul class="dropdown-menu">
+                    <li><a href="#userinfo" class="dropdown-item"><i class="fas fa-users mx-1"></i>Account info</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a href="#manageVenue" class="dropdown-item"><i class="fas fa-store mx-1"></i>Manage venue</a></li>
+                    <li><a href="#history" class="dropdown-item"><i class="fas fa-history mx-1"></i>Venue history</a></li>
+                  </ul>
+                </li>
+                <li class="nav-item me-1">
+                  <a class="nav-link" href="hotspots"><i class="fas fa-map-marker-alt mx-1"></i>Hotspots</a>
+                </li>
+              </ul>
+              <div class="d-flex my-1">
+                <a class="btn btn-outline-primary" href="/users/logout"><i class="fas fa-sign-out-alt mx-1"></i>Logout</a>
+              </div>
+            </div>
+          </div>
+        </nav>
+      </header>
+
+      <main class="flex-shrink-0">
+
+
+
+        <div id="userinfo" class="anchor"></div>
+        <div class="container-md my-3 mx-auto content">
+          <h1 class="display-1">Account Info</h1>
+        </div>
+
+        <div class="container-md my-3 mx-auto content" style="padding: 25px 15px 0">
+          <section class="row my-4" v-if="userinfo.status">
+            <div class="col shadow-sm bg-light border rounded">
+              <h2 class="my-2"><i class="fa fa-edit" style="font-size:36px"></i> Edit account</h2>
+              <p class="lead">For any changes to your personal details, contacts or login credentials, update them here.</p>
+              <p class="form-text"></p>
+              <form class="row gx-4">
+                <div v-bind:class="[field.width, 'mb-3']" v-for="field in userinfo.form">
+                  <label v-bind:for="'input'+field.id" class="form-label">{{ field.name }}</label>
+                  <button v-if="field.canUpdate" v-on:click="field.disabled = false; field.preData = field.data" type="button" class="btn btn-link p-0"><i class="fas fa-edit px-2"></i></button>
+                  <input type="text" class="form-control" v-bind:id="'input'+field.id" v-bind:readonly="field.disabled" v-bind:disabled="field.disabled" v-model="field.data" v-on:input="field.check();" v-bind:class="{ 'is-invalid': !field.status }"/>
+                  <div v-if="(field.canUpdate && (!field.disabled))" class="my-2">
+                    <button type="button" class="btn btn-outline-success" v-on:click="userinfo.change(field)">Confirm</button>
+                    <button type="button" class="btn btn-outline-danger" v-on:click="field.disabled = true; field.data = field.preData; field.check();">Cancel</button>
+                  </div>
+                  <p v-if="!field.status" class="form-text text-danger m-0">{{ field.warnMsg }}</p>
+                </div>
+              </form>
+              <h3 class="my-3"><i class="fas fa-key"></i> Change my password</h3>
+              <div v-if="pwd.status">
+                <div class="row">
+                  <div class="col-md-4" v-for="field in pwd.form">
+                    <div class="form-floating mb-3">
+                      <input type="password" class="form-control" v-bind:id="field.id" v-model="field.data" v-on:input="field.check(); pwd.warnMsg='';" v-bind:class="{ 'is-invalid': !field.status }" v-bind:placeholder="field.name"/>
+                      <label v-bind:for="field.id" v-bind:for="field.id">{{ field.name }}</label>
+                      <p class="form-text m-0" v-if="field.msg">{{ field.msg }}</p>
+                      <p class="text-danger m-0" v-if="!field.status">Invalid {{ field.name.toLowerCase() }}</p>
+                    </div>
+                  </div>
+                </div>
+                <p v-if="pwd.warnMsg" class="text-danger m-0">{{ pwd.warnMsg }}</p>
+                <div>
+                  <button type="button" class="btn btn-primary my-3" v-on:click="pwd.change();">Change password</button>
+                </div>
+              </div>
+              <div v-else>
+                <div class="d-flex justify-content-center my-3">
+                  <i class="far fa-check-circle fa-5x text-success mx-auto" aria-label="A tick"></i>
+                </div>
+                <p class="text-center my-3">You have successfully changed your password</p>
+              </div>
+            </div>
+          </section>
+          <section class="row my-4" v-else>
+            <h3 class="text-center">Something went wrong</h3>
+            <p class="text-center">Please try again later.</p>
+          </section>
+
+        </div>
+
+
+        <div id="manageVenue" class="anchor"></div>
+        <div class="container-md my-3 mx-auto content">
+          <h1 class="display-1">Manage Venue</h1>
+        </div>
+        <div class="container-md my-3 mx-auto content" style="padding: 25px 15px 0">
+          <div class="row bg-light rounded border shadow-sm">
+            <div class="col-12">
+              <h2 class="my-2"><i class="fa fa-edit" style="font-size:36px"></i> Edit Venue</h2>
+              <p class="lead">For any changes to your business details, contacts or info, update them here.</p>
+              <p class="text-danger">Remember your venue infomration will be permanently removed from the system once the remove button is clicked.</p>
+            </div>
+            <div class="col-md-6 col-12 my-3" v-for="(form, index) in venueinfo.form">
+              <form class="border rounded shadow-sm p-2">
+                <h4>Venue {{ index+1 }}</h4>
+                <div v-bind:class="['mb-3']" v-for="field in form">
+                  <label v-bind:for="'venue'+index+'Input'+field.id" class="form-label">{{ field.name }}</label>
+                  <button v-if="field.canUpdate" v-on:click="field.disabled = false; field.preData = field.data" type="button" class="btn btn-link p-0"><i class="fas fa-edit px-2"></i></button>
+                  <div>
+                    <textarea v-if="field.id == 'description'" class="form-control" v-bind:id="'venue'+index+'Input'+field.id" v-bind:readonly="field.disabled" v-bind:disabled="field.disabled" v-model="field.data" v-on:input="field.check();" v-bind:class="{ 'is-invalid': !field.status }"></textarea>
+                    <input v-else type="text" class="form-control" v-bind:id="'venue'+index+'Input'+field.id" v-bind:readonly="field.disabled" v-bind:disabled="field.disabled" v-model="field.data" v-on:input="field.check();" v-bind:class="{ 'is-invalid': !field.status }"/>
+                  </div>
+                  <div v-if="(field.canUpdate && (!field.disabled))" class="my-2">
+                    <button type="button" class="btn btn-outline-success" v-on:click="venueinfo.change(field, venueinfo.ids[index])">Confirm</button>
+                    <button type="button" class="btn btn-outline-danger" v-on:click="field.disabled = true; field.data = field.preData; field.check();">Cancel</button>
+                  </div>
+                  <p v-if="!field.status" class="form-text text-danger m-0">{{ field.warnMsg }}</p>
+                </div>
+                <div class="d-grid">
+                  <a class="btn btn-primary my-2" v-bind:href="'/venues/'+venueinfo.ids[index]+'/qrpage'" target="_blank">Generate QR page</a>
+                  <button class="btn btn-danger my-2" type="button" v-on:click="venueinfo.remove(venueinfo.ids[index], index)">Remove this venue</button>
+                  <p v-if="venueinfo.warnMsg[index]" class="text-danger">{{ venueinfo.warnMsg[index] }}</p>
+                </div>
+              </form>
+            </div>
+            <div class="col my-3">
+              <div v-if="venueadd.show" class="border rounded shadow-sm p-2">
+                <h3>Register a new venue</h3>
+                <form class="row">
+                  <div v-bind:class="[field.width, 'mb-3']" v-for="field in venueadd.form">
+                    <label v-bind:for="'venueAdd'+field.id" class="form-label">{{ field.name }}<span v-if="field.isRequired">*</span></label>
+                    <div>
+                      <select v-if="field.type == 'select'" class="form-select" v-bind:id="'venueAdd'+field.id" v-model="field.data" v-bind:class="{ 'is-invalid': !field.status }" v-bind:required="field.isRequired">
+                        <option v-for="option in field.options" v-bind:value="option.id">{{ option.state }}</option>
+                      </select>
+                      <textarea v-else-if="field.type == 'textarea'" class="form-control" v-bind:id="'venueAdd'+field.id" v-model="field.data" v-on:input="field.check();" v-bind:class="{ 'is-invalid': !field.status }" v-bind:required="field.isRequired"></textarea>
+                      <input v-else type="text" class="form-control" v-bind:id="'venueAdd'+field.id" v-model="field.data" v-on:input="field.check();" v-bind:class="{ 'is-invalid': !field.status }" v-bind:required="field.isRequired"/>
+                      <p class="form-text text-danger m-0" v-if="!field.status">Invalid {{ field.name.toLowerCase() }}</p>
+                    </div>
+                  </div>
+                  <p class="form-text">* fields are required</p>
+                  <p class="form-text text-danger" v-if="venueadd.warnMsg">{{ venueadd.warnMsg }}</p>
+                </form>
+                <div class="d-grid">
+                  <button class="btn btn-success my-2" type="button" v-on:click="venueadd.submit();">Create venue</button>
+                  <button class="btn btn-danger my-2" type="button" v-on:click="venueadd.show = false; clean(venueadd.form)">Cancel</button>
+                </div>
+              </div>
+              <div v-else class="border rounded shadow-sm p-2" v-on:click="venueadd.show = true" style="cursor: pointer">
+                <h1 class="text-center">+</h1>
+                <p class="text-center">Click here to add a new venue</p>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div id="history" class="anchor"></div>
+        <div class="container-md my-3 mx-auto content">
+          <h1 class="display-1">Venue Check-in History</h1>
+        </div>
+
+        <div class="container-md my-3 mx-auto content" style="padding: 25px 15px 0">
+          <div class="row bg-light rounded border shadow-sm">
+            <div class="col">
+              <h2 class="my-2"><i class="fas fa-user-check"></i> List of Customer/Patron Check-ins</h2>
+              <p class="lead">Sort the check-in list using the drop down or date.</p>
+              <p class="form-text"></p>
+              <select class="form-select my-3" v-model="venuehistory.curr">
+                <option v-bind:selected="true" v-bind:value="-1">Select one of your venue to see its check in history</option>
+                <option v-for="(table, index) in venuehistory.tables" v-bind:value="index">Venue ID {{ table.id }}</option>
+              </select>
+              <table class="table table-striped">
+                <thead>
+                  <th scope="col">Check in ID</th>
+                  <th scope="col">Patron last name</th>
+                  <th scope="col">Time</th>
+                  <th scope="col">Method</th>
+                </thead>
+                <tbody>
+                  <tr v-for="record in currVenueHistory">
+                    <th scope=row>{{ record.id }}</th>
+                    <td>{{ record.userLastName }}</td>
+                    <td>{{ Date(record.time).toLocaleString() }}</td>
+                    <td>{{ record.method }}</td>
+                  </tr>
+                </tbody>
+              </table>
+
+            </div>
+          </div>
+        </div>
+
+      </main>
+
+      <footer class="footer mt-auto py-3">
+        <hr class="mb-0"/>
+        <div class="container">
+          <ul class="nav d-flex justify-content-center">
+            <li class="nav-item"><a class="nav-link text-muted" href="#"><small>About</small></a></li>
+            <li class="nav-item"><a class="nav-link text-muted" href="#"><small>FAQ</small></a></li>
+            <li class="nav-item"><a class="nav-link text-muted" href="#"><small>Contact us</small></a></li>
+            <li class="nav-item"><a class="nav-link text-muted" href="#"><small>Privacy</small></a></li>
+          </ul>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,20 @@
+body {
+  height: 297mm;
+  width: 210mm;
+}
+
+.large {
+  font-size: 15mm;
+}
+
+.medium {
+  font-size: 10mm;
+}
+
+.small {
+  font-size: 5mm;
+}
+
+.main {
+  margin-top: -50px;
+}

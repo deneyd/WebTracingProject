@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" class="h-100">
+  <head>
+    <meta charset="utf-8">
+    <title>CovidSAFE - My health</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-wEmeIV1mKuiNpC+IOBjI7aAzPcEZeedi5yW5f2yOq55WWLwNGmvvx4Um1vskeMj0" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-p34f1UUtsS3wqzfto5wAAmdvj+osOnFyQFpp4Ua3gs/ZVWx6oOypYoCJhGGScy+8" crossorigin="anonymous"></script>
+    <link href="stylesheets/style.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.3/css/all.css" integrity="sha384-SZXxX4whJ79/gErwcOYf+zWLeJdY/qpuqC4cAa9rOGUstPomtqpuNWT9wdPEn2fk" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.2.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.2.0/mapbox-gl.css' rel='stylesheet' />
+    <script src="javascripts/myhealth.normal.js" defer></script>
+  </head>
+  <body class="h-100">
+    <div class="d-flex flex-column h-100" id="app">
+
+      <header class="fixed-top">
+        <div class="d-flex bg-danger">
+          <h5 class="bg-danger m-0 py-1 text-white flex-grow-1 text-center"><a href="" id="header-dial" class="text-white">DIAL HEALTH HELPLINE<i class="fas fa-phone px-2"></i></a></h5>
+          <button type="button" class="btn-close btn-close-white align-self-center px-2"></button>
+        </div>
+        <nav class="navbar navbar-expand-lg bg-light border-bottom shadow-sm navbar-light">
+          <div class="container-lg">
+            <a class="navbar-brand text-primary" href="home">CovidSAFE<i class="fas fa-user-shield px-1"></i></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topnav">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse d-lg-flex justify-content-between" id="topnav">
+              <ul class="navbar-nav me-auto my-1">
+                <li class="nav-item me-1">
+                  <a class="nav-link" href="home"><i class="fas fa-home mx-1"></i>Home</a>
+                </li>
+                <li class="nav-item dropdown me-1">
+                  <a class="nav-link dropdown-toggle" href="" data-bs-toggle="dropdown"><i class="fas fa-info-circle mx-1"></i>My health</a>
+                  <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#userinfo"><i class="fas fa-users mx-1"></i>User info</a></li>
+                    <li><a class="dropdown-item" href="#changepwd"><i class="fas fa-key mx-1"></i>Change passowrd</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="#checkin"><i class="fas fa-check mx-1"></i>Check in</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="#history"><i class="fas fa-history mx-1"></i>History</a></li>
+                  </ul>
+                </li>
+                <li class="nav-item me-1">
+                  <a class="nav-link" href="hotspots"><i class="fas fa-map-marker-alt mx-1"></i>Hotspots</a>
+                </li>
+              </ul>
+              <div class="d-flex my-1">
+                <a class="btn btn-outline-primary" href="/users/logout"><i class="fas fa-sign-out-alt mx-1"></i>Logout</a>
+              </div>
+            </div>
+          </div>
+        </nav>
+      </header>
+
+      <main class="flex-shrink-0">
+        <div class="container mx-auto content">
+          <div id="userinfo" class="anchor"></div>
+          <section class="row my-4" v-if="userinfoFormStatus">
+            <div class="col shadow-sm bg-light border rounded">
+              <h3 class="my-2"><i class="fas fa-info-circle"></i> User information</h3>
+              <form class="row gx-4">
+                <div v-bind:class="[field.width, 'mb-3']" v-for="field in userinfoForm">
+                  <label v-bind:for="'input'+field.id" class="form-label">{{ field.name }}</label>
+                  <button v-if="field.canUpdate" v-on:click="field.disabled = false; field.preData = field.data" type="button" class="btn btn-link p-0"><i class="fas fa-edit px-2"></i></button>
+                  <input type="text" class="form-control" v-bind:id="'input'+field.id" v-bind:readonly="field.disabled" v-bind:disabled="field.disabled" v-model="field.data" v-on:input="field.check();" v-bind:class="{ 'is-invalid': !field.status }"/>
+                  <div v-if="(field.canUpdate && (!field.disabled))" class="my-2">
+                    <button type="button" class="btn btn-outline-success" v-on:click="reqChange(field);">Confirm</button>
+                    <button type="button" class="btn btn-outline-danger" v-on:click="field.disabled = true; field.data = field.preData; field.check();">Cancel</button>
+                  </div>
+                  <p v-if="!field.status" class="form-text text-danger m-0">{{ field.msg }}</p>
+                </div>
+              </form>
+            </div>
+          </section>
+          <section class="row my-4" v-else>
+            <h3 class="text-center">Something went wrong</h3>
+            <p class="text-center">Please try again later.</p>
+          </section>
+          <hr />
+          <div class="row my-2">
+            <section class="col-md me-md-2 shadow-sm bg-light border rounded">
+              <div id="changepwd" class="anchor"></div>
+              <h3 class="my-2"><i class="fas fa-key"></i> Change user password</h3>
+              <div v-if="!pwdFormStatus">
+                <form class="my-3">
+                  <div class="form-floating mb-3" v-for="field in pwdForm">
+                    <input type="password" class="form-control" v-bind:id="field.id" v-model="field.data" v-on:input="field.check(); pwdFormWarn='';" v-bind:class="{ 'is-invalid': !field.status }" v-bind:placeholder="field.name"/>
+                    <label v-bind:for="field.id" v-bind:for="field.id">{{ field.name }}</label>
+                    <p class="form-text m-0" v-if="field.msg">{{ field.msg }}</p>
+                    <p class="text-danger m-0" v-if="!field.status">Invalid {{ field.name.toLowerCase() }}</p>
+                  </div>
+                  <p v-if="pwdFormWarn" class="text-danger m-0">{{ pwdFormWarn }}</p>
+                  <button type="button" class="btn btn-outline-primary my-2" onclick="postPwdChange();">Change password</button>
+                </form>
+              </div>
+              <div v-else>
+                <div class="d-flex justify-content-center my-3">
+                  <i class="far fa-check-circle fa-5x text-success mx-auto" aria-label="A tick"></i>
+                </div>
+                <p class="text-center my-3">You have successfully changed your password</p>
+              </div>
+            </section>
+            <section class="col-md ms-md-2 shadow-sm bg-light border rounded">
+              <div id="checkin" class="anchor"></div>
+              <h3 class="my-3"><i class="fas fa-check-circle"></i> Check-in</h3>
+              <div class="my-3 form-floating">
+                <input type="text" class="form-control" v-on:input = "checkin.msg = ''" placeholder="Enter check in code" id="checkinCode" v-model="checkin.code"></input>
+                <label for="checkinCode" class="form-label">Venue check in code</label>
+                <p class="form-text mb-2">A 10 characters alphanumeric code</p>
+                <p v-bind:class="[ checkin.status ? 'text-success' : 'text-danger', 'm-0' ]" v-if="checkin.msg">{{ checkin.msg }}</p>
+              </div>
+              <button type="button" class="btn btn-outline-primary my-2" onclick="reqCheckin();">Check in</button>
+            </section>
+          </div>
+          <hr />
+          <div id="history" class="anchor"></div>
+          <section class="row my-2 shadow-sm bg-light border rounded">
+            <div class="col-12 col-md-8 bg-light" id="map"></div>
+            <div class="col-12 col-md-4 bg-light d-flex justify-content-center align-items-center">
+              <div class="py-3 px-md-3">
+                <h3 class="my-2">Check-in history</h3>
+                <p class="my-2">Chose a date below to show the places you have been to.</p>
+                <form class="form-floating my-2">
+                  <input type="date" class="form-control" id="fromDate" v-model="historyDate" v-bind:min="historyMin" v-bind:max="historyMax" v-on:change="historyCurrPage = 1" v-bind:disabled="history.length == 0"/>
+                  <label for="fromDate">Choose a date</label>
+                  <p class="text-warning" v-if="history.length == 0">You have never checked in a venue yet.</p>
+                </form>
+              </div>
+            </div>
+          </section>
+          <div id="historyTable" class="anchor"></div>
+          <section class="row my-2 shadow-sm bg-light border rounded">
+            <div class="col">
+              <h3 class="my-2"><i class="fas fa-check-circle"></i> Check-in history table</h3>
+              <table class="table table-striped">
+                <thead>
+                  <th scope="col">#</th>
+                  <th scope="col">Venue name</th>
+                  <th scope="col">Venue address</th>
+                  <th scope="col">Time</th>
+                  <th scope="col">Method</th>
+                </thead>
+                <tbody>
+                  <tr v-for="(record, index) in historyTable[historyCurrPage-1]">
+                    <th scope=row>{{ record.id }}</th>
+                    <td>{{ record.venue.name }}</td>
+                    <td>{{ record.venue.address }}</td>
+                    <td>{{ record.time.toLocaleString() }}</td>
+                    <td>{{ record.method }}</td>
+                  </tr>
+                </tbody>
+              </table>
+              <nav aria-label="...">
+                <ul class="pagination">
+                  <li v-bind:class="{ 'page-item': true, 'disabled': historyCurrPage == 1 }">
+                    <span class="page-link" v-if="historyCurrPage == 1" aria-disabled="true">&#8592;</span>
+                    <a class="page-link" href="#historyTable" v-on:click="--historyCurrPage" v-else>&#8592;</a>
+                  </li>
+                  <li v-for="n in historyTable.length" v-bind:class="{ 'page-item': true, 'active': historyCurrPage == n }">
+                    <span class="page-link" v-if="historyCurrPage == n" aria-disabled="true" aria-current="page">{{ n }}</span>
+                    <a class="page-link" href="#historyTable" v-on:click="historyCurrPage = n; return false;" v-else>{{ n }}</a>
+                  </li>
+                  <li class="page-item" v-bind:class="{ 'page-item': true, 'disabled': historyCurrPage == historyTable.length }">
+                    <span class="page-link" v-if="historyCurrPage == historyTable.length" aria-disabled="true">&#8594;</span>
+                    <a class="page-link" href="#historyTable" v-on:click="++historyCurrPage" v-else>&#8594;</a>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+          </section>
+        </div>
+      </main>
+
+      <footer class="footer mt-auto py-3">
+        <hr class="mb-0"/>
+        <div class="container">
+          <ul class="nav d-flex justify-content-center">
+            <li class="nav-item"><a class="nav-link text-muted"><small>About</small></a></li>
+            <li class="nav-item"><a class="nav-link text-muted"><small>FAQ</small></a></li>
+            <li class="nav-item"><a class="nav-link text-muted"><small>Contact us</small></a></li>
+            <li class="nav-item"><a class="nav-link text-muted"><small>Privacy</small></a></li>
+          </ul>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" class="h-100">
+
+<head>
+  <meta charset="utf-8">
+  <title>CovidSAFE - Welcome</title>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-wEmeIV1mKuiNpC+IOBjI7aAzPcEZeedi5yW5f2yOq55WWLwNGmvvx4Um1vskeMj0" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-p34f1UUtsS3wqzfto5wAAmdvj+osOnFyQFpp4Ua3gs/ZVWx6oOypYoCJhGGScy+8" crossorigin="anonymous"></script>
+  <link href="stylesheets/style.css" rel="stylesheet" type="text/css" />
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.3/css/all.css" integrity="sha384-SZXxX4whJ79/gErwcOYf+zWLeJdY/qpuqC4cAa9rOGUstPomtqpuNWT9wdPEn2fk" crossorigin="anonymous">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+  <script src='https://api.mapbox.com/mapbox-gl-js/v2.2.0/mapbox-gl.js'></script>
+  <link href='https://api.mapbox.com/mapbox-gl-js/v2.2.0/mapbox-gl.css' rel='stylesheet' />
+  <script src="javascripts/home.normal.js" defer></script>
+  <script src="https://apps.elfsight.com/p/platform.js" defer></script>
+</head>
+
+<body class="h-100">
+  <div class="d-flex flex-column h-100" id="app">
+    <header class="fixed-top">
+      <div class="d-flex bg-danger">
+        <h5 class="bg-danger m-0 py-1 text-white flex-grow-1 text-center"><a href="" id="header-dial" class="text-white">DIAL HEALTH HELPLINE<i class="fas fa-phone px-2"></i></a></h5>
+        <button type="button" class="btn-close btn-close-white align-self-center px-2"></button>
+      </div>
+      <nav class="navbar navbar-expand-md sticky-top bg-light navbar-light">
+        <div class="container-md">
+          <a class="navbar-brand text-primary" href="home">CovidSAFE<i class="fas fa-user-shield px-1"></i></a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topnav">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+          <div class="collapse navbar-collapse d-md-flex justify-content-between" id="topnav">
+            <ul class="navbar-nav me-auto my-1">
+              <li class="nav-item me-1">
+                <a class="nav-link" href="home"><i class="fas fa-home mx-1"></i>Home</a>
+              </li>
+              <li class="nav-item me-1 dropdown">
+                <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="manage"><i class="fas fa-users-cog mx-1"></i>My manage</a>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="manage#userinfo">Your info</a></li>
+                  <li><a class="dropdown-item" href="manage#singup">Signup admin</a></li>
+                  <li><a class="dropdown-item" href="manage#manage">Manage user/venue</a></li>
+                  <li><a class="dropdown-item" href="manage#history">View check in history</a></li>
+                </ul>
+              </li>
+              <li class="nav-item me-1 dropdown">
+                <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="hotspots"><i class="fas fa-map-marker-alt mx-1"></i>Hotspots</a>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="hotspots#currHotspots">Current hotspots</a></li>
+                  <li><a class="dropdown-item" href="hotspots#modify">Add/remove hotspot</a></li>
+                </ul>
+              </li>
+            </ul>
+            <div class="d-flex my-1">
+              <a class="btn btn-outline-primary" href="/users/logout"><i class="fas fa-sign-out-alt mx-1"></i>Logout</a>
+            </div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+
+    <main class="flex-shrink-0">
+      <div class="container-md my-3 mx-auto content">
+        <div class="row">
+          <div class="alert alert-primary shadow-sm m-0">
+            <div class="d-flex">
+              <h3 class="flex-grow-1">Covid-19 information</h3>
+              <button type="button" class="btn-close px-2"></button>
+            </div>
+            <hr class="my-2" />
+            <p>Coronavirus disease (COVID-19) is an infectious disease caused by a newly discovered coronavirus. Most people infected with the COVID-19 virus will experience mild to moderate respiratory illness and recover without requiring special treatment.
+              Older people, and those with underlying medical problems like cardiovascular disease, diabetes, chronic respiratory disease, and cancer are more likely to develop serious illness.</p>
+            <button onclick='window.open("https://www.who.int/health-topics/coronavirus#tab=tab_1")' class="btn btn-primary btn-lg btn-sm" style="background-color:#4169E1;">Read more</button>
+          </div>
+        </div>
+
+        <div class="elfsight-app-80b72410-0258-45bd-bcd4-8cc89d43a849"></div>
+        <hr />
+        <div class="row rounded border shadow-sm">
+          <div class="col-12 col-md-8 bg-light" id="map"></div>
+          <div class="col-md-4 bg-light">
+            <h3 class="text-center my-2">Venue information</h3>
+            <p>{{ mapInfo }}</p>
+          </div>
+        </div>
+        <hr />
+        <!-- PREVENTION -->
+        <div class="row bg-light rounded border shadow-sm border border-success alert alert-success">
+          <div class="col-12">
+            <p class="my-2" class="font-weight-light" style="color:green;">PRECAUTIONS</p>
+            <h2 class="my-2" class="font-weight-light">Ways to prevent the spread of the disease</h2>
+          </div>
+          <dl>
+            <dt style="color:green"> <i class="fas fa-check"></i> Hand Hygiene</dt>
+            <dd style="color:green">Wash hands for at least 20 seconds or more with soap. Otherwise make use of hand sanitizer.</dd>
+            <dt style="color:green"> <i class="fas fa-check"></i> Use Face Masks</dt>
+            <dd style="color:green">Use government certified face masks in public (N-95).</dd>
+            <dt style="color:green"> <i class="fas fa-eye"></i> Avoid Touching</dt>
+            <dd style="color:green">Avoid the touching of your face, nose or eyes.</dd>
+            <dt style="color:green"> <i class="fas fa-home"></i> Stay Home</dt>
+            <dd style="color:green">Stay home when you feel unwell. Avoid participating in large social gatherings. Stay home whenever neccesary.</dd>
+          </dl>
+        </div>
+        <!-- PREVENTION -->
+        <hr />
+
+        <!-- SYMTOMS -->
+        <div class="row bg-light rounded border shadow-sm border border-danger alert alert-danger">
+          <div class="col-12">
+            <p class="my-2" class="font-weight-light" style="color:red;">SYMPTOMS</p>
+            <h2 class="my-2" class="font-weight-light">Coronavirus Symptoms</h2>
+            <p> The symptoms of coronavirus can take approximately up to 14 days to appear. The main symptoms are:</p>
+          </div>
+          <div class="col-sm">
+            <div class="card" style="width: 18rem;">
+              <img class="card-img-top" src="images/symptom-a.png" alt="Vomit" style="padding: 65px;">
+              <div class="card-body">
+                <h5 class="card-title">Vomit/Cough</h5>
+                <p class="card-text" style="color:black;">If you are having dry coughs or an upset stomach/feeling nausea, this may be a sign of Covid-19.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-sm">
+            <div class="card" style="width: 18rem;">
+              <img class="card-img-top" src="images/symptom-b.png" alt="Fever" style="padding: 65px;">
+              <div class="card-body">
+                <h5 class="card-title">Fever</h5>
+                <p class="card-text" style="color:black;">Any temperature above 37.5 is considered to be infectious.</p>
+              </div>
+            </div>
+          </div>
+
+
+          <div class="col-sm">
+            <div class="card" style="width: 18rem;">
+              <img class="card-img-top" src="images/symptom-c.png" alt="Cold" style="padding: 65px;">
+              <div class="card-body">
+                <h5 class="card-title">Cold/Body Aches</h5>
+                <p class="card-text" style="color:black;">If you have a cold or any body aches, consult with your GP.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <hr />
+
+
+
+      </div>
+
+    </main>
+
+    <footer class="footer mt-auto py-3">
+      <hr class="mb-0" />
+      <div class="container">
+        <ul class="nav d-flex justify-content-center">
+          <li class="nav-item"><a class="nav-link text-muted" href="#"><small>About</small></a></li>
+          <li class="nav-item"><a class="nav-link text-muted" href="#"><small>FAQ</small></a></li>
+          <li class="nav-item"><a class="nav-link text-muted" href="#"><small>Contact us</small></a></li>
+          <li class="nav-item"><a class="nav-link text-muted" href="#"><small>Privacy</small></a></li>
+        </ul>
+      </div>
+    </footer>
+  </div>
+
+</body>
+
+</html>

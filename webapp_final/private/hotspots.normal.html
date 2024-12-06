@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr" class="vh-100">
+  <head>
+    <meta charset="utf-8">
+    <title>CovidSAFE - Hotspots</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-wEmeIV1mKuiNpC+IOBjI7aAzPcEZeedi5yW5f2yOq55WWLwNGmvvx4Um1vskeMj0" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-p34f1UUtsS3wqzfto5wAAmdvj+osOnFyQFpp4Ua3gs/ZVWx6oOypYoCJhGGScy+8" crossorigin="anonymous"></script>
+    <link href="stylesheets/style.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.3/css/all.css" integrity="sha384-SZXxX4whJ79/gErwcOYf+zWLeJdY/qpuqC4cAa9rOGUstPomtqpuNWT9wdPEn2fk" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.2.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.2.0/mapbox-gl.css' rel='stylesheet' />
+    <script src="https://cdn.jsdelivr.net/npm/@turf/turf@5/turf.min.js"></script>
+    <script src="javascripts/hotspots.normal.js" defer></script>
+  </head>
+  <body class="vh-100">
+    <div class="d-flex flex-column vh-100" id="app" v-bind:class="['vh-100', 'd-flex', 'flex-column', 'position-relative']" style="display: none">
+
+      <header class="fixed-top">
+        <div class="d-flex bg-danger">
+          <h5 class="bg-danger m-0 py-1 text-white flex-grow-1 text-center"><a href="" id="header-dial" class="text-white">DIAL HEALTH HELPLINE<i class="fas fa-phone px-2"></i></a></h5>
+          <button type="button" class="btn-close btn-close-white align-self-center px-2"></button>
+        </div>
+        <nav class="navbar navbar-expand-lg bg-light navbar-light">
+          <div class="container-lg">
+            <a class="navbar-brand text-primary" href="home">CovidSAFE<i class="fas fa-user-shield px-1"></i></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#topnav">
+              <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse d-lg-flex justify-content-between" id="topnav">
+              <ul class="navbar-nav me-auto my-1">
+                <li class="nav-item me-1">
+                  <a class="nav-link" href="home"><i class="fas fa-home mx-1"></i>Home</a>
+                </li>
+                <li class="nav-item dropdown me-1">
+                  <a class="nav-link dropdown-toggle" href="manage" data-bs-toggle="dropdown"><i class="fas fa-info-circle mx-1"></i>My health</a>
+                  <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="manage#userinfo"><i class="fas fa-users mx-1"></i>User info</a></li>
+                    <li><a class="dropdown-item" href="manage#changepwd"><i class="fas fa-key mx-1"></i>Change passowrd</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="manage#chekcin"><i class="fas fa-check mx-1"></i>Check in</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="manage#history"><i class="fas fa-history mx-1"></i>History</a></li>
+                  </ul>
+                </li>
+                <li class="nav-item me-1">
+                  <a class="nav-link" href="#"><i class="fas fa-map-marker-alt mx-1"></i>Hotspots</a>
+                </li>
+              </ul>
+              <div class="d-flex my-1">
+                <a class="btn btn-outline-primary" href="/users/logout"><i class="fas fa-sign-out-alt mx-1"></i>Logout</a>
+              </div>
+            </div>
+          </div>
+        </nav>
+      </header>
+
+      <main class="flex-shrink-0">
+        <div class="container my-3 mx-auto content">
+          <section class="row border rounded shadow-sm" aira-describedby="hotspotTitle">
+            <div class="col-12 border-bottom-2 rounded-top bg-secondary">
+              <h3 class="p-3 m-0 text-center text-white" id="hotspotTitle">Hotspot information</h3>
+            </div>
+            <div class="col-12 col-md bg-light rounded-bottom" id="map"></div>
+            <div class="col-12 col-md bg-light" style="height: 370px;" v-if="status">
+              <div class="row border-bottom gx-2">
+                <div class="col-7 col-md-7 my-2">
+                  <input type="search" class="form-control" id="hotspotSearch" placeholder="Search here" v-model="search">
+                </div>
+                <div class="col-5 col-md-5 my-2">
+                  <select class="form-select" v-model="sortBy">
+                    <option disabled selected vale="1">Sort by</option>
+                    <option value="2">New to Old</option>
+                    <option value="3" v-if="hasAddress === true">Closest to Furthest</option>
+                  </select>
+                </div>
+              </div>
+              <div class="row" v-if="hotspots.length > 0">
+                <div class="col overflow-auto" style="height: 305px;" id="hotspotInfo">
+                  <div class="accordion my-2" v-for="(hotspot, index) in hotspotsShown" v-bind:id="'hotspot'+index" >
+                    <div class="accordion-item">
+                      <h2 class="accordion-header" v-bind:id="'accordionHeading'+index">
+                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" v-bind:data-bs-target="'#collapse'+index" v-bind:aria-expanded="false" aria-controls="collapseOne" v-on:click="map.flyTo({zoom: 14, center: hotspot.address.location }); togglePopup(hotspot);">
+                          <b>{{ hotspot.name }}</b>
+                        </button>
+                      </h2>
+                      <div v-bind:id="'collapse'+index" class="accordion-collapse collapse" aria-labelledby="'accordionHeading'+index" data-bs-parent="#hotspotInfo">
+                        <div class="accordion-body">
+                          <p><b>Phone number:</b> {{ hotspot.contact }}</p>
+                          <p class=""><b>Address:</b> {{ hotspot.address.formatted }}</p>
+                          <p><b>Added by:</b>{{ hotspot.adminAdded }} </p>
+                          <p class="m-0" v-if="hasAddress"><b>Distance to home: </b>{{ hotspot.distanceToHome.toFixed(2) }} km</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="row" v-else>
+                <h3 class="text-center my-2">No hotspots found</h3>
+                <p class="text-center text-muted my-2">It seems like there are no hotposts at the moment. Nice!</p>
+              </div>
+            </div>
+            <div class="col-12 col-md bg-light" style="height: 370px;" v-else>
+              <h3 class="text-center">Something went wrong</h3>
+            </div>
+          </section>
+        </div>
+      </main>
+
+      <footer class="footer mt-auto py-3">
+        <hr class="mb-0"/>
+        <div class="container">
+          <ul class="nav d-flex justify-content-center">
+            <li class="nav-item"><a class="nav-link text-muted" href="#"><small>About</small></a></li>
+            <li class="nav-item"><a class="nav-link text-muted" href="#"><small>FAQ</small></a></li>
+            <li class="nav-item"><a class="nav-link text-muted" href="#"><small>Contact us</small></a></li>
+            <li class="nav-item"><a class="nav-link text-muted" href="#"><small>Privacy</small></a></li>
+          </ul>
+        </div>
+      </footer>
+
+    </div>
+  </body>
+</html>

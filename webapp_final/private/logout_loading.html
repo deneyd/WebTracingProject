@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>CovidSAFE - Logging out</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+      .loader {
+        border: 10px solid #f3f3f3;
+        border-top: 10px solid #3498db;
+        border-radius: 50%;
+        width: 60px;
+        height: 60px;
+        animation: spin 2s linear infinite;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        margin-top: -30px;
+        margin-left: -30px;
+      }
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script>
+      $(document).ready(function() {
+        $.getScript('https://connect.facebook.net/en_US/sdk.js', function(){
+          FB.init({
+            appId      : '554734292186755',
+            cookie     : true,
+            xfbml      : true,
+            version    : 'v10.0'
+          });
+          FB.getLoginStatus(function(response) {
+            if (response.status === 'connected') {
+              FB.logout();
+            }
+            $.getScript('https://apis.google.com/js/platform.js', function() {
+              gapi.load('auth2', function() {
+                gapi.auth2.init({ client_id: '655908017168-dt926ljpp3g6b9ao9mstlk6dfocnqmvg' })
+                .then(function() {
+                  gapi.auth2.getAuthInstance().disconnect();
+                  window.location.assign(window.location.protocol+'//'+window.location.hostname+':'+window.location.port+'/login');
+                });
+              });
+            });
+          });
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <div class="loader" v-if="isLoading"></div>
+  </body>
+</html>

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>CovidSAFE - Signup</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="stylesheets/style.css" rel="stylesheet" type="text/css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-wEmeIV1mKuiNpC+IOBjI7aAzPcEZeedi5yW5f2yOq55WWLwNGmvvx4Um1vskeMj0" crossorigin="anonymous" />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-p34f1UUtsS3wqzfto5wAAmdvj+osOnFyQFpp4Ua3gs/ZVWx6oOypYoCJhGGScy+8" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.12/dist/vue.js"></script>
+    <script src="javascripts/signup.js" defer></script>
+  </head>
+  <body class="vh-100 d-flex flex-column position-relative">
+    <div id="app" v-bind:class="['vh-100', 'd-flex', 'flex-column', 'position-relative']" style="display: none">
+
+      <header>
+        <h1 class="text-center text-primary py-2 m-0 header"><a href="/">CovidSAFE</a></h1>
+      </header>
+
+      <div class="loader" v-if="isLoading"></div>
+      <main class="flex-shrink" >
+        <hr />
+        <section class="signupForm" v-if="!signupSuccess">
+          <div class="container">
+            <form class="row gx-4" v-if="roleConfirmed == 1" id="normal">
+              <h4 class="text-center">Normal user sign up</h4>
+              <div v-for="field in normalSignUp" v-bind:class="[field.width, 'mb-3']">
+                <template v-if="field.type == 'select'">
+                  <label v-bind:for="field.id" class="form-label" v-bind:for="field.id">{{ field.name }}<span v-if="field.required">*</span></label>
+                  <select class="form-select" name="" v-bind:id="field.id" v-model="field.data">
+                    <option value="M">Male</option>
+                    <option value="F">Female</option>
+                    <option value="N">Prefer not to say</option>
+                  </select>
+                  <p class="form-text m-0">{{ field.msg }}</p>
+                  <p class="form-text text-danger m-0" v-if="!field.status">Invalid {{ field.name.toLowerCase() }}</p>
+                </template>
+                <template v-else-if="field.type == 'checkbox'">
+                  <input type="checkbox" class="form-check-input" v-bind:id="field.id" v-model="field.data" v-bind:class="{ 'is-invalid': !field.status }" v-bind:aria-invalid="field.status" required v-on:change="field.status = field.check(field.data);"/>
+                  <label for="inputAccept" class="form-check-label" v-bind:for="field.data">Accept <i>Terms and Conditions</i>*</label>
+                  <p class="form-text m-0">{{ field.msg }}</p>
+                  <p class="form-text text-danger m-0" v-if="!field.status">Accept Terms and Conditions to proceed</p>
+                </template>
+                <template v-else>
+                  <label v-bind:for="field.id" class="form-label">{{ field.name }}<span v-if="field.required">*</span></label>
+                  <input v-bind:type="field.type" class="form-control" v-bind:id="field.id" v-model="field.data" v-on:input="field.status = field.check(field.data);" v-bind:class="{ 'is-invalid': !field.status }" v-bind:required="field.required" v-bind:aria-invalid="field.status"/>
+                  <p class="form-text m-0">{{ field.msg }}</p>
+                  <p class="form-text text-danger m-0" v-if="!field.status">Invalid {{ field.name.toLowerCase() }}</p>
+                </template>
+              </div>
+              <em class="form-text mb-3">* fields are required</em>
+              <p class="text-danger form-text" v-if="!normalSignUpStatus">{{ normalSignUpWarning }}</p>
+              <div class="col d-md-flex justify-content-md-between d-grid gap-2" aria-label="Navigate">
+                <button type="button" class="btn btn-outline-danger py-2 rounded-pill" v-on:click="roleConfirmed = 0">Go back</button>
+                <button type="button" class="btn btn-outline-success py-2 rounded-pill" onclick="submitNormalSignUp()">Sign up</button>
+              </div>
+            </form>
+
+            <form class="row gx-4" v-else-if="roleConfirmed == 2" id="venue">
+              <h4 class="text-center">Business user sign up</h4>
+              <div v-for="field in venueSignUp" v-bind:class="[field.width, 'mb-3']">
+                <template v-if="field.type == 'select'">
+                  <label v-bind:for="field.id" class="form-label">{{ field.name }}*</label>
+                  <select class="form-select" name="" v-bind:id="field.id" v-model="field.data" v-bind:class="{ 'is-invalid': !field.status }">
+                    <option v-for="option in field.selectOptions" v-bind:value="option.id">{{ option.state }}</option>
+                  </select>
+                  <p class="form-text m-0">{{ field.msg }}</p>
+                  <p class="form-text text-danger m-0" v-if="!field.status">Invalid {{ field.name.toLowerCase() }}</p>
+                </template>
+                <template v-else-if="field.type == 'checkbox'">
+                  <input type="checkbox" class="form-check-input" v-bind:id="field.id" v-model="field.data" v-bind:class="{ 'is-invalid': !field.status }" required v-on:change="field.status = field.check(field.data);"/>
+                  <label v-bind:for="field.id" class="form-check-label">Accept <i>Terms and Conditions</i>*</label>
+                  <p class="form-text m-0">{{ field.msg }}</p>
+                  <p class="form-text text-danger m-0" v-if="!field.status">Accept Terms and Conditions to proceed</p>
+                </template>
+                <template v-else>
+                  <label v-bind:for="field.id" class="form-label">{{ field.name }}*</label>
+                  <input v-bind:type="field.type" class="form-control" v-bind:id="field.id" v-model="field.data" v-on:input="field.status = field.check(field.data);" v-bind:class="{ 'is-invalid': !field.status }" required />
+                  <p class="form-text m-0">{{ field.msg }}</p>
+                  <p class="form-text text-danger m-0" v-if="!field.status">Invalid {{ field.name.toLowerCase() }}</p>
+                </template>
+              </div>
+              <em class="form-text mb-3">* fields are required</em>
+              <p class="text-danger form-text" v-if="!venueSignUpStatus">{{ venueSignUpWarning }}</p>
+              <div class="col d-md-flex justify-content-md-between d-grid gap-2" aria-label="Navigate">
+                <button type="button" class="btn btn-outline-danger py-2 rounded-pill" v-on:click="roleConfirmed = 0">Go back</button>
+                <button type="button" class="btn btn-outline-success py-2 rounded-pill" onclick="submitVenueSignUp()">Sign up</button>
+              </div>
+            </form>
+
+            <form class="position-absolute top-50 start-50 translate-middle" v-else id="roleSelector">
+              <h4 class="text-center m-3">Select your role</h4>
+              <select class="form-select form-select-lg mb-3" id="roleSelect" v-model="roleSelected">
+                <option selected disabled value="0">Please select your role</option>
+                <option value="1">Normal user</option>
+                <option value="2">Business owner</option>
+              </select>
+              <p class="form-text">You will be creating an account for the specifed role.</p>
+              <div class="d-md-flex d-grid justify-content-md-between gap-2" aria-label="Navigate">
+                <button type="button" class="btn btn-outline-danger rounded-pill py-2 " onclick="goLogin()">Back</button>
+                <button type="button" class="btn btn-outline-success rounded-pill py-2" v-on:click="roleConfirmed = roleSelected">Continue</button>
+              </div>
+            </form>
+          </div>
+        </section>
+        <section class="flex-shrink" v-bind:style="{  display: 'block' }" style="display: none;" v-else aria-label="Successful Signup">
+          <hr />
+          <div class="container mx-auto">
+            <div class="position-absolute top-50 start-50 translate-middle">
+              <h2 class="text-center">You have successfully signed up an account</h2>
+              <p class="text-center"><a href="/">Click here</a> to go to the login screen.</p>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="footer py-3 mt-auto d-block">
+        <hr class="mb-0"/>
+        <ul class="nav justify-content-center">
+          <li class="nav-item"><a class="nav-link text-muted" href="#"><small>About</small></a></li>
+          <li class="nav-item"><a class="nav-link text-muted" href="#"><small>FAQ</small></a></li>
+          <li class="nav-item"><a class="nav-link text-muted" href="#"><small>Contact us</small></a></li>
+          <li class="nav-item"><a class="nav-link text-muted" href="#"><small>Privacy</small></a></li>
+        </ul>
+      </footer>
+
+    </div>
+  </body>
+</html>
